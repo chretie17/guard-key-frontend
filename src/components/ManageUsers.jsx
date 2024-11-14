@@ -5,111 +5,120 @@ import styled from 'styled-components';
 import Modal from 'react-modal';
 
 const Container = styled.div`
-    padding: 20px;
-    max-width: 800px;
-    margin: auto;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
 `;
 
-const Title = styled.h2`
-    margin-bottom: 20px;
-    text-align: center;
-    color: #E13A44;
-    font-weight: bold;
+const Title = styled.h1`
+  margin-bottom: 40px;
+  text-align: center;
+  color: #e13a44;
+  font-weight: bold;
+  font-size: 36px;
 `;
 
 const Table = styled.table`
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 40px;
+  background-color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 `;
 
 const TableHeader = styled.th`
-    border: 1px solid #ddd;
-    padding: 10px;
-    background-color: #E13A44;
-    color: #fff;
-    text-align: left;
+  border: 1px solid #ddd;
+  padding: 20px;
+  background-color: #e13a44;
+  color: #fff;
+  text-align: left;
+  font-weight: bold;
 `;
 
 const TableData = styled.td`
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-    color: #333;
+  border: 1px solid #ddd;
+  padding: 20px;
+  text-align: left;
+  color: #333;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
 `;
 
 const Button = styled.button`
-    padding: 10px;
-    background-color: ${props => props.delete ? '#ff4c4c' : '#E13A44'};
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-    margin-right: 5px;
+  padding: 14px 24px;
+  background-color: ${props => props.delete ? '#ff4c4c' : '#e13a44'};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 12px;
+  transition: background-color 0.3s ease;
 
-    &:hover {
-        background-color: ${props => props.delete ? '#ff3333' : '#c73238'};
-    }
+  &:hover {
+    background-color: ${props => props.delete ? '#ff3333' : '#c73238'};
+  }
 `;
 
 const AddUserButton = styled.button`
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
+  padding: 14px 28px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 40px;
+  display: block;
+  margin-left: auto;
+  transition: background-color 0.3s ease;
 
-    &:hover {
-        background-color: #45a049;
-    }
+  &:hover {
+    background-color: #45a049;
+  }
 `;
 
 const ModalContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 `;
 
 const Input = styled.input`
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
 `;
 
 const Select = styled.select`
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
 `;
 
 Modal.setAppElement('#root');
-
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
     const [form, setForm] = useState({ id: null, username: '', email: '', password: '', role: 'User' });
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Fetch users from backend
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -124,63 +133,53 @@ const ManageUsers = () => {
         fetchUsers();
     }, []);
 
-    // Handle form input changes
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    // Add or update a user
-  // Add or update a user
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.username || !form.email || (!form.id && !form.password)) {
-        setError('Username, Email, and Password (for new users) are required.');
-        return;
-    }
-
-    try {
-        if (form.id) {
-            // Update user without changing password
-            await axios.put(Api.getUrl(`/users/${form.id}`), {
-                email: form.email,
-                username: form.username,
-                role: form.role
-            });
-            // Update users state to reflect changes
-            setUsers(users.map(user => user.id === form.id ? { ...user, email: form.email, username: form.username, role: form.role } : user));
-        } else {
-            // Add new user with password
-            const response = await axios.post(Api.getUrl('/users'), {
-                email: form.email,
-                username: form.username,
-                password: form.password,
-                role: form.role
-            });
-            // Fetch updated users list or append new user directly
-            setUsers([...users, response.data]);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!form.username || !form.email || (!form.id && !form.password)) {
+            setError('Username, Email, and Password (for new users) are required.');
+            return;
         }
 
-        // Reset form after submission
-        setForm({ id: null, username: '', email: '', password: '', role: 'User' });
-        setError(null);
-        setIsModalOpen(false);
-    } catch (err) {
-        setError('Failed to save user.');
-        console.error(err);
-    }
-};
+        try {
+            if (form.id) {
+                await axios.put(Api.getUrl(`/users/${form.id}`), {
+                    email: form.email,
+                    username: form.username,
+                    role: form.role
+                });
+                setUsers(users.map(user => user.id === form.id ? { ...user, email: form.email, username: form.username, role: form.role } : user));
+            } else {
+                const response = await axios.post(Api.getUrl('/users'), {
+                    email: form.email,
+                    username: form.username,
+                    password: form.password,
+                    role: form.role
+                });
+                setUsers([...users, response.data]);
+            }
 
-    // Edit a user
+            setForm({ id: null, username: '', email: '', password: '', role: 'User' });
+            setError(null);
+            setIsModalOpen(false);
+        } catch (err) {
+            setError('Failed to save user.');
+            console.error(err);
+        }
+    };
+
     const editUser = (user) => {
-        setForm({ ...user, password: '' }); // Don't set password in form for updates
+        setForm({ ...user, password: '' });
         setIsModalOpen(true);
     };
 
-    // Delete a user
     const deleteUser = async (userId) => {
         try {
             await axios.delete(Api.getUrl(`/users/${userId}`));
-            setUsers(users.filter(user => user.id !== userId)); // Update UI after deletion
+            setUsers(users.filter(user => user.id !== userId));
         } catch (err) {
             setError('Failed to delete user.');
             console.error(err);
@@ -194,7 +193,6 @@ const handleSubmit = async (e) => {
 
             <AddUserButton onClick={() => setIsModalOpen(true)}>Add User</AddUserButton>
 
-            {/* Users Table */}
             <Table>
                 <thead>
                     <tr>
@@ -221,7 +219,6 @@ const handleSubmit = async (e) => {
                 </tbody>
             </Table>
 
-            {/* Add / Edit User Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={() => setIsModalOpen(false)}

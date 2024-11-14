@@ -165,9 +165,11 @@ const Sidebar = () => {
             <MenuList>
                 {role === 'Admin' && (
                     <>
+                        <MenuItem><StyledLink to="/dashboard">Dashboard</StyledLink></MenuItem>
                         <MenuItem><StyledLink to="/users">Manage Users</StyledLink></MenuItem>
                         <MenuItem><StyledLink to="/sites">Manage Sites</StyledLink></MenuItem>
                         <MenuItem><StyledLink to="/admin-request">View Requests</StyledLink></MenuItem>
+                        <MenuItem><StyledLink to="/adminoutsider">View Public Requests</StyledLink></MenuItem>
                         <MenuItem><StyledLink to="/reports">Reports</StyledLink></MenuItem>
                     </>
                 )}

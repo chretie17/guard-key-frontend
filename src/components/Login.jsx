@@ -258,7 +258,7 @@ const Login = () => {
             localStorage.setItem('userId', userId);
             setError(null);
 
-            if (role === 'Admin') navigate('/users');
+            if (role === 'Admin') navigate('/dashboard');
             else if (role === 'Technician') navigate('/request-access');
             else if (role === 'Outsider') navigate('/request-access');
         } catch (err) {

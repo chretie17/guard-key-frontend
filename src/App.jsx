@@ -8,8 +8,11 @@ import ViewRequests from './components/ViewRequests';
 import Reports from './components/Reports';
 import MyRequests from './components/MyRequests';
 import RequestAccess from './components/RequestAccess';
+import Dashboard from './components/Dashboard';
 import styled from 'styled-components';
 import AdminManageRequests from './components/Adminrequests';
+import PublicRequest from './components/publicrequest';
+import AdminOutsiderRequests from './components/AdminOutsiderRequest';
 
 const AppContainer = styled.div`
     display: flex;
@@ -27,9 +30,12 @@ const AppContent = () => {
 
     return (
         <AppContainer>
-            {isLoggedIn && location.pathname !== '/login' && <Sidebar />}
-            <ContentContainer>
+{isLoggedIn && location.pathname !== '/login' && location.pathname !== '/publicrequest' && <Sidebar />}
+<ContentContainer>
                 <Routes>
+                     <Route path="/dashboard" element={<Dashboard/>} />
+                     <Route path="/publicrequest" element={<PublicRequest/>} />
+                     <Route path="/adminoutsider" element={<AdminOutsiderRequests />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/users" element={<ManageUsers />} />
                     <Route path="/sites" element={<ManageSites />} />
@@ -37,7 +43,6 @@ const AppContent = () => {
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/my-requests" element={<MyRequests />} />
                     <Route path="/admin-request" element={<AdminManageRequests />} />
-
                     <Route path="/request-access" element={<RequestAccess />} /> {/* Public route */}
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
