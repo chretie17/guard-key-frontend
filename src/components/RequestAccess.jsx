@@ -1,65 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Api from '../api';
-import styled from 'styled-components';
-
-const Container = styled.div`
-    padding: 20px;
-    max-width: 500px;
-    margin: auto;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-`;
-
-const Title = styled.h2`
-    text-align: center;
-    color: #E13A44;
-    font-weight: bold;
-    margin-bottom: 20px;
-`;
-
-const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-`;
-
-const Select = styled.select`
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-`;
-
-const Input = styled.input`
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-`;
-
-const Textarea = styled.textarea`
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    resize: vertical;
-`;
-
-const Button = styled.button`
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-
-    &:hover {
-        background-color: #45a049;
-    }
-`;
+import { Key, Clock, Building, FileText } from "lucide-react";
 
 const RequestKey = () => {
     const [sites, setSites] = useState([]);
@@ -67,7 +9,7 @@ const RequestKey = () => {
     const [reason, setReason] = useState('');
     const [requestedTime, setRequestedTime] = useState('');
     const [message, setMessage] = useState('');
-    const userId = localStorage.getItem('userId'); // Retrieve userId from local storage
+    const userId = localStorage.getItem('userId');
 
     useEffect(() => {
         const fetchSites = async () => {
@@ -101,31 +43,79 @@ const RequestKey = () => {
     };
 
     return (
-        <Container>
-            <Title>Request Key</Title>
-            {message && <p>{message}</p>}
-            <Form onSubmit={handleSubmit}>
-                <Select value={selectedSite} onChange={(e) => setSelectedSite(e.target.value)} required>
-                    <option value="">Select Site</option>
-                    {sites.map(site => (
-                        <option key={site.id} value={site.id}>{site.name}</option>
-                    ))}
-                </Select>
-                <Textarea
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="Reason for request"
-                    required
-                />
-                <Input
-                    type="datetime-local"
-                    value={requestedTime}
-                    onChange={(e) => setRequestedTime(e.target.value)}
-                    required
-                />
-                <Button type="submit">Request Key</Button>
-            </Form>
-        </Container>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
+            <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-[#CC3D35] to-[#E54B43] p-6 text-white">
+                    <div className="flex justify-center mb-4">
+                        <div className="p-3 bg-white/10 rounded-full">
+                            <Key className="h-8 w-8" />
+                        </div>
+                    </div>
+                    <h1 className="text-2xl font-bold text-center">Request Key</h1>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                    {message && (
+                        <div className={`p-4 rounded-lg ${
+                            message.includes("success") 
+                                ? "bg-green-50 text-green-700" 
+                                : "bg-red-50 text-red-700"
+                        }`}>
+                            {message}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="relative">
+                            <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <select
+                                value={selectedSite}
+                                onChange={(e) => setSelectedSite(e.target.value)}
+                                required
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#CC3D35] focus:border-transparent outline-none bg-white"
+                            >
+                                <option value="">Select Site</option>
+                                {sites.map(site => (
+                                    <option key={site.id} value={site.id}>{site.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <div className="relative">
+                            <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <textarea
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                placeholder="Reason for request"
+                                required
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#CC3D35] focus:border-transparent outline-none min-h-[100px] resize-none"
+                            />
+                        </div>
+                        
+                        <div className="relative">
+                            <Clock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <input
+                                type="datetime-local"
+                                value={requestedTime}
+                                onChange={(e) => setRequestedTime(e.target.value)}
+                                required
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#CC3D35] focus:border-transparent outline-none"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-[#CC3D35] text-white py-2 px-4 rounded-lg font-medium 
+                                hover:bg-[#B02E27] transition-colors duration-200 
+                                focus:ring-2 focus:ring-offset-2 focus:ring-[#CC3D35]"
+                        >
+                            Request Key
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     );
 };
 
