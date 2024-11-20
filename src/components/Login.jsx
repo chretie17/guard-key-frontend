@@ -269,40 +269,44 @@ const Login = () => {
 
     return (
         <LoginContainer>
-            <GlowingOrb />
-            <GlowingOrb />
-            <LoginBox>
-                <LogoContainer>
-                    <Logo>KTRN</Logo>
-                    <Subtitle>Key Management System</Subtitle>
-                </LogoContainer>
-                <form onSubmit={handleSubmit}>
-                    <InputGroup>
-                        <Input
-                            type="text"
-                            placeholder="Username or Email"
-                            value={identifier}
-                            onChange={(e) => setIdentifier(e.target.value)}
-                            required
-                        />
-                    </InputGroup>
-                    <InputGroup>
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </InputGroup>
-                    <Button type="submit">
-                        Sign In
-                    </Button>
-                </form>
-                {error && <ErrorMessage>{error}</ErrorMessage>}
-            </LoginBox>
+          <GlowingOrb />
+          <GlowingOrb />
+          <LoginBox>
+            <LogoContainer>
+              <Logo>KTRN</Logo>
+              <Subtitle>Key Management System</Subtitle>
+            </LogoContainer>
+            <form onSubmit={handleSubmit}>
+              <InputGroup>
+                <Input
+                  type="text"
+                  placeholder="Username or Email"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                />
+              </InputGroup>
+              <InputGroup>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </InputGroup>
+              <Button type="submit">
+                Sign In
+              </Button>
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <a href="/publicrequest">Are you a public user? Click here</a>
+              </div>
+            </form>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+          </LoginBox>
         </LoginContainer>
-    );
-};
+      );
+    };
+    
+    export default Login;
 
-export default Login;
