@@ -9,10 +9,13 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  Legend,
+  AreaChart,
+  Area,
 } from "recharts";
-import styled from "styled-components";
-import api from "../api"; // Your Api class with getUrl method
-import axios from "axios"; // Axios for HTTP requests
+import { ArrowUpRight, ArrowDownRight, Users, CheckCircle, Building2, User } from "lucide-react";
+import api from "../api";
+import axios from "axios";
 
 export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -78,147 +81,199 @@ export default function AdminDashboard() {
     requestTrends,
   } = dashboardData;
 
+  // Calculate approval rate
+  const approvalRate = ((approvedRequests / totalRequests) * 100).toFixed(1);
+  const isPositiveGrowth = approvalRate > 50;
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-sm font-medium text-gray-900">{label}</p>
+          <p className="text-sm text-blue-600">
+            {payload[0].value.toLocaleString()} requests
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <DashboardContainer>
-      <CardRow>
-        <Card>
-          <CardTitle>Total Requests</CardTitle>
-          <CardValue>{totalRequests}</CardValue>
-          <CardDescription>Total number of requests made</CardDescription>
-        </Card>
-        <Card>
-          <CardTitle>Approved Requests</CardTitle>
-          <CardValue>{approvedRequests}</CardValue>
-          <CardDescription>Total approved key requests</CardDescription>
-        </Card>
-        <Card>
-          <CardTitle>Best Performing Site</CardTitle>
-          <CardValue>{bestPerformingSite.site_name || "N/A"}</CardValue>
-          <CardDescription>
-            Requests: {bestPerformingSite.total_requests || 0}
-          </CardDescription>
-        </Card>
-        <Card>
-          <CardTitle>Most Active User</CardTitle>
-          <CardValue>{mostActiveUser.username || "N/A"}</CardValue>
-          <CardDescription>
-            Requests: {mostActiveUser.total_requests || 0}
-          </CardDescription>
-        </Card>
-      </CardRow>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">Dashboard Overview</h1>
+        
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Requests Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium ${
+                isPositiveGrowth ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              }`}>
+                {isPositiveGrowth ? (
+                  <div className="flex items-center">
+                    <ArrowUpRight className="h-4 w-4 mr-1" />
+                    +{approvalRate}%
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <ArrowDownRight className="h-4 w-4 mr-1" />
+                    {approvalRate}%
+                  </div>
+                )}
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">{totalRequests.toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Total Requests</p>
+          </div>
 
-      <ChartsContainer>
-        <ChartWrapper>
-          <ChartTitle>Requests by Site</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={requestDistribution}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="site_name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total_requests" fill="#4CAF50" barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
+          {/* Approved Requests Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">{approvedRequests.toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Approved Requests</p>
+          </div>
 
-        <ChartWrapper>
-          <ChartTitle>Status Breakdown</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={statusBreakdown}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total_requests" fill="#FF9800" barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-      </ChartsContainer>
+          {/* Best Performing Site Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <Building2 className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 truncate">
+              {bestPerformingSite.site_name || "N/A"}
+            </h3>
+            <p className="text-gray-600 text-sm">
+              {bestPerformingSite.total_requests?.toLocaleString() || 0} requests
+            </p>
+          </div>
 
-      <ChartsContainer>
-        <ChartWrapper>
-          <ChartTitle>Requests by Hour</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={[popularRequestTime]}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="request_hour" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total_requests" fill="#FFC107" barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
+          {/* Most Active User Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <User className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 truncate">
+              {mostActiveUser.username || "N/A"}
+            </h3>
+            <p className="text-gray-600 text-sm">
+              {mostActiveUser.total_requests?.toLocaleString() || 0} requests
+            </p>
+          </div>
+        </div>
 
-        <ChartWrapper>
-          <ChartTitle>Request Trends Over Time</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={requestTrends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="request_date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="total_requests" stroke="#673AB7" />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-      </ChartsContainer>
-    </DashboardContainer>
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Request Distribution Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Requests by Site</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={requestDistribution} barSize={32}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="site_name" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{fontSize: 12}}
+                  />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="total_requests" 
+                    fill="#F3414B"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Status Breakdown Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Status Distribution</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={statusBreakdown} barSize={32}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="status" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="total_requests" 
+                    fill="#F3414B"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Hourly Distribution Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Hourly Request Pattern</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={[popularRequestTime]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="request_hour" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="total_requests" 
+                    fill="#f59e0b" 
+                    fillOpacity={0.2}
+                    stroke="#f59e0b"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Request Trends Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Request Trends</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={requestTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="request_date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{fontSize: 12}}
+                  />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="total_requests" 
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10b981', strokeWidth: 2 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
-
-const DashboardContainer = styled.div`
-  padding: 2rem;
-  background-color: #fffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const CardRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  margin-bottom: 2rem;
-`;
-
-const Card = styled.div`
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  text-align: center;
-`;
-
-const CardTitle = styled.h4`
-  color: #333;
-  margin-bottom: 1rem;
-`;
-
-const CardValue = styled.h2`
-  color: #FB454E;
-  font-size: 2rem;
-  font-weight: bold;
-`;
-
-const CardDescription = styled.p`
-  color: #666;
-  font-size: 0.9rem;
-`;
-
-const ChartsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-`;
-
-const ChartWrapper = styled.div`
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-`;
-
-const ChartTitle = styled.h4`
-  text-align: center;
-  color: #333;
-  margin-bottom: 1rem;
-`;

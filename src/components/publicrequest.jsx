@@ -1,149 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Api from '../api';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, Calendar, Mail, Phone, User, Briefcase } from 'lucide-react';
+import { Building2, Calendar, Mail, Phone, User, Briefcase, ChevronDown } from 'lucide-react';
 import Logo from '../assets/logo.jpeg';
 
-// Styled Components
-const PageWrapper = styled.div`
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-`;
 
-const GlassContainer = styled(motion.div)`
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    border-radius: 28px;
-    padding: 3rem;
-    width: 100%;
-    max-width: 680px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 10px 20px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-`;
+const validateEmail = (email, partner) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return false;
+    const partnerDomains = {
+        'MTN': ['mtn.com', 'gmail.com'],
+        'Huawei': ['huawei.com', 'gmail.com'],
+        'Airtel': ['airtel.com', 'gmail.com'],
+        'Tres Rwanda': ['tres.rw', 'gmail.com']
+    };
+    const domain = email.split('@')[1].toLowerCase();
+    return partnerDomains[partner]?.includes(domain) || false;
+};
 
-const LogoWrapper = styled(motion.div)`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 3rem;
+const validatePhone = (phone) => {
+    const phoneRegex = /^(\+250|07)\d{8}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+};
 
-    img {
-        width: 140px;
-        height: auto;
-        margin-bottom: 1.5rem;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-    }
-`;
-
-const Title = styled.h1`
-    font-size: 2.75rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #cc3d35 0%, #e53e3e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-align: center;
-`;
-
-const FormGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.75rem;
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-    }
-`;
-
-const InputWrapper = styled(motion.div)`
-    position: relative;
-    grid-column: ${props => (props.fullWidth ? '1 / -1' : 'auto')};
-`;
-
-const InputIcon = styled.div`
-    position: absolute;
-    left: 1.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #cc3d35;
-    opacity: 0.8;
-    z-index: 2;
-`;
-
-const StyledInput = styled.input`
-    width: 100%;
-    padding: 1.15rem 1.25rem 1.15rem 3.25rem;
-    background: #ffffff;
-    border: 2px solid rgba(203, 213, 224, 0.4);
-    border-radius: 14px;
-    font-size: 1rem;
-    color: #1a1a1a;
-    &:focus {
-        border-color: #cc3d35;
-        box-shadow: 0 0 0 4px rgba(204, 61, 53, 0.1);
-    }
-`;
-
-const StyledSelect = styled.select`
-    width: 100%;
-    padding: 1.15rem 1.25rem 1.15rem 3.25rem;
-    background: #ffffff;
-    border: 2px solid rgba(203, 213, 224, 0.4);
-    border-radius: 14px;
-    font-size: 1rem;
-    color: #1a1a1a;
-    &:focus {
-        border-color: #cc3d35;
-        box-shadow: 0 0 0 4px rgba(204, 61, 53, 0.1);
-    }
-`;
-
-const SubmitButton = styled(motion.button)`
-    width: 100%;
-    padding: 1.25rem;
-    background: linear-gradient(135deg, #cc3d35 0%, #e53e3e 100%);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 2.5rem;
-`;
-
-const Message = styled.div`
-    padding: 1.25rem;
-    margin: 1.25rem 0;
-    border-radius: 14px;
-    background: ${props => (props.isError ? 'rgba(254, 226, 226, 0.95)' : 'rgba(236, 253, 245, 0.95)')};
-    color: ${props => (props.isError ? '#991b1b' : '#065f46')};
-    border: 1px solid ${props => (props.isError ? 'rgba(153, 27, 27, 0.2)' : 'rgba(6, 95, 70, 0.2)')};
-`;
-
-// Form Component
 const OutsiderRequestForm = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        site_id: '',
-        partner_name: '',
-        reason: '',
-        requested_time: '',
+    const [formData, setFormData] = useState(() => {
+        const savedData = localStorage.getItem('partnerRequestForm');
+        return savedData ? JSON.parse(savedData) : {
+            name: '',
+            email: '',
+            phone: '',
+            site_id: '',
+            partner_name: '',
+            reason: '',
+            requested_time: '',
+        };
     });
 
     const [sites, setSites] = useState([]);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
-    const partners = ['MTN', 'Huawei', 'Airtel', 'Tres Rwanda']; // Predefined list of partners
+    const partners = ['MTN', 'Huawei', 'Airtel', 'Tres Rwanda'];
 
     useEffect(() => {
         const fetchSites = async () => {
@@ -158,17 +58,50 @@ const OutsiderRequestForm = () => {
         fetchSites();
     }, []);
 
+    useEffect(() => {
+        localStorage.setItem('partnerRequestForm', JSON.stringify(formData));
+    }, [formData]);
+
+    const validateForm = () => {
+        const errors = {};
+        if (!validateEmail(formData.email, formData.partner_name)) {
+            errors.email = `Please use a valid ${formData.partner_name || 'company'} email address or Gmail`;
+        }
+        if (!validatePhone(formData.phone)) {
+            errors.phone = 'Please enter a valid Rwandan phone number (+250 or 07 format)';
+        }
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleChange = e => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+            if (validationErrors[name]) {
+                setValidationErrors(prev => ({ ...prev, [name]: '' }));
+            }
+            if (name === 'partner_name' && validationErrors.email) {
+                setValidationErrors(prev => ({ ...prev, email: '' }));
+            }
+            return newData;
+        });
     };
 
     const handleSubmit = async e => {
         e.preventDefault();
+        if (!validateForm()) {
+            setMessage('Please correct the validation errors.');
+            setIsError(true);
+            return;
+        }
+
+        setIsLoading(true);
         try {
             const response = await axios.post(Api.getUrl('/public/requests'), formData);
             setMessage(response.data.message);
             setIsError(false);
-            setFormData({
+            const emptyForm = {
                 name: '',
                 email: '',
                 phone: '',
@@ -176,76 +109,130 @@ const OutsiderRequestForm = () => {
                 partner_name: '',
                 reason: '',
                 requested_time: '',
-            });
+            };
+            setFormData(emptyForm);
+            localStorage.removeItem('partnerRequestForm');
         } catch (error) {
             setMessage(error.response?.data?.error || 'Error submitting request.');
             setIsError(true);
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    const InputIcon = ({ children }) => (
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-red-500/80">
+            {children}
+        </div>
+    );
+
     return (
-        <PageWrapper>
-            <GlassContainer>
-                <LogoWrapper>
-                    <img src={Logo} alt="Logo" />
-                    <Title>Partners Key Request</Title>
-                </LogoWrapper>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-4 md:p-8 flex justify-center items-center font-sans">
+            <div className="w-full max-w-4xl bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-8 md:p-16 
+                shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/60
+                transform transition-all duration-500 ease-out animate-fade-in">
+                
+                <div className="flex flex-col items-center mb-16 relative">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-24 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-500 rounded-full opacity-20 blur-2xl"></div>
+                    <img 
+                        src={Logo}
+                        alt="Logo"
+                        className="w-40 h-40 mb-8 rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
+                    />
+                    <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-center mb-4">
+                        Partners Key Request
+                    </h1>
+                    <p className="text-gray-600 text-center max-w-lg">
+                        Complete the form below to request access keys for our partner services
+                    </p>
+                </div>
 
-                {message && <Message isError={isError}>{message}</Message>}
+                {message && (
+                    <div className={`mb-8 transform transition-all duration-300 ${
+                        isError 
+                            ? 'bg-red-50 border-l-4 border-red-500 text-red-800'
+                            : 'bg-green-50 border-l-4 border-green-500 text-green-800'
+                    } p-6 rounded-2xl shadow-lg`}>
+                        <p className="text-lg font-medium">{message}</p>
+                    </div>
+                )}
 
-                <form onSubmit={handleSubmit}>
-                    <FormGrid>
-                        <InputWrapper>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="relative group">
                             <InputIcon>
-                                <User size={20} />
+                                <User size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledInput
+                            <input
                                 type="text"
                                 name="name"
                                 placeholder="Your Name"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-4 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    placeholder:text-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             />
-                        </InputWrapper>
+                        </div>
 
-                        <InputWrapper>
+                        <div className="relative group">
                             <InputIcon>
-                                <Mail size={20} />
+                                <Mail size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledInput
+                            <input
                                 type="email"
                                 name="email"
                                 placeholder="Your Email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-4 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    placeholder:text-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             />
-                        </InputWrapper>
+                            {validationErrors.email && (
+                                <span className="absolute -bottom-6 left-0 text-sm text-red-500 font-medium">
+                                    {validationErrors.email}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputWrapper>
+                        <div className="relative group">
                             <InputIcon>
-                                <Phone size={20} />
+                                <Phone size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledInput
+                            <input
                                 type="tel"
                                 name="phone"
-                                placeholder="Phone Number"
+                                placeholder="Phone Number (+250 or 07...)"
                                 value={formData.phone}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-4 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    placeholder:text-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             />
-                        </InputWrapper>
+                            {validationErrors.phone && (
+                                <span className="absolute -bottom-6 left-0 text-sm text-red-500 font-medium">
+                                    {validationErrors.phone}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputWrapper>
+                        <div className="relative group">
                             <InputIcon>
-                                <Building2 size={20} />
+                                <Building2 size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledSelect
+                            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                            <select
                                 name="site_id"
                                 value={formData.site_id}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-10 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    appearance-none cursor-pointer focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             >
                                 <option value="">Select Site</option>
                                 {sites.map(site => (
@@ -253,18 +240,22 @@ const OutsiderRequestForm = () => {
                                         {site.name}
                                     </option>
                                 ))}
-                            </StyledSelect>
-                        </InputWrapper>
+                            </select>
+                        </div>
 
-                        <InputWrapper>
+                        <div className="relative group">
                             <InputIcon>
-                                <Briefcase size={20} />
+                                <Briefcase size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledSelect
+                            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                            <select
                                 name="partner_name"
                                 value={formData.partner_name}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-10 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    appearance-none cursor-pointer focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             >
                                 <option value="">Select Partner</option>
                                 {partners.map(partner => (
@@ -272,39 +263,59 @@ const OutsiderRequestForm = () => {
                                         {partner}
                                     </option>
                                 ))}
-                            </StyledSelect>
-                        </InputWrapper>
+                            </select>
+                        </div>
 
-                        <InputWrapper fullWidth>
-                            <StyledInput
-                                type="text"
+                        <div className="relative group md:col-span-2">
+                            <textarea
                                 name="reason"
                                 placeholder="Reason for Request"
                                 value={formData.reason}
                                 onChange={handleChange}
                                 required
+                                rows="3"
+                                className="w-full px-6 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    placeholder:text-gray-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300 resize-none"
                             />
-                        </InputWrapper>
+                        </div>
 
-                        <InputWrapper fullWidth>
+                        <div className="relative group md:col-span-2">
                             <InputIcon>
-                                <Calendar size={20} />
+                                <Calendar size={20} className="group-hover:scale-110 transition-transform duration-300" />
                             </InputIcon>
-                            <StyledInput
+                            <input
                                 type="datetime-local"
                                 name="requested_time"
                                 value={formData.requested_time}
                                 onChange={handleChange}
                                 required
+                                className="w-full pl-12 pr-4 py-4 bg-white/70 border-2 border-gray-100 rounded-2xl text-gray-800 
+                                    focus:border-red-500 focus:ring-4 focus:ring-red-500/10 
+                                    shadow-sm hover:shadow-md transition-all duration-300"
                             />
-                        </InputWrapper>
-                    </FormGrid>
+                        </div>
+                    </div>
 
-                    <SubmitButton type="submit">Submit Request</SubmitButton>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full mt-8 py-5 px-8 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 
+                            text-white text-xl font-bold rounded-2xl shadow-lg shadow-red-500/30 
+                            hover:shadow-xl hover:shadow-red-500/40 focus:ring-4 focus:ring-red-500/30
+                            transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300
+                            disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group"
+                    >
+                        <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        {isLoading ? 'Submitting...' : 'Submit Request'}
+                    </button>
                 </form>
-            </GlassContainer>
-        </PageWrapper>
+
+                <div className="mt-8 text-center text-sm text-gray-500">
+                    All fields are required. Your information will be handled securely.
+                </div>
+            </div>
+        </div>
     );
 };
-
 export default OutsiderRequestForm;

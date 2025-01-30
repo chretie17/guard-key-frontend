@@ -19,23 +19,44 @@ const AppContainer = styled.div`
     width: 100%;
 `;
 
+const SidebarContainer = styled.div`
+    width: 250px; /* Fixed width */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Full height */
+    background-color: #1e293b; /* Dark blue-gray */
+    color: white;
+    z-index: 1000;
+`;
+
 const ContentContainer = styled.div`
     flex: 1;
     padding: 20px;
+    ${({ isAuthenticated }) => isAuthenticated && `margin-left: 250px; width: calc(100% - 250px);`}
 `;
 
 const AppContent = () => {
     const location = useLocation();
     const isLoggedIn = localStorage.getItem('token'); // Check if user is logged in
 
+    // Define pages that should NOT have the sidebar
+    const noSidebarPages = ['/login', '/publicrequest'];
+    const isAuthenticated = isLoggedIn && !noSidebarPages.includes(location.pathname);
+
     return (
         <AppContainer>
-{isLoggedIn && location.pathname !== '/login' && location.pathname !== '/publicrequest' && <Sidebar />}
-<ContentContainer>
+            {/* Only show Sidebar for authenticated pages */}
+            {isAuthenticated && (
+                <SidebarContainer>
+                    <Sidebar />
+                </SidebarContainer>
+            )}
+            <ContentContainer isAuthenticated={isAuthenticated}>
                 <Routes>
-                     <Route path="/dashboard" element={<Dashboard/>} />
-                     <Route path="/publicrequest" element={<PublicRequest/>} />
-                     <Route path="/adminoutsider" element={<AdminOutsiderRequests />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/publicrequest" element={<PublicRequest />} />
+                    <Route path="/adminoutsider" element={<AdminOutsiderRequests />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/users" element={<ManageUsers />} />
                     <Route path="/sites" element={<ManageSites />} />
