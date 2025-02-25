@@ -318,7 +318,7 @@ const Report = () => {
                     </div>
                     <button 
                         onClick={downloadAsPDF}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
                         <Download size={20} />
                         Download PDF
@@ -380,7 +380,7 @@ const Report = () => {
 
                         <button 
                             onClick={fetchReport}
-                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all"
+                            className="w-full bg-gradient-to-r from-red-600 to-blue-700 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all"
                         >
                             Apply Filters
                         </button>
