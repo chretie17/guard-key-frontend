@@ -375,7 +375,6 @@ const ManageUsers = () => {
                                             onChange={handleChange}
                                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#E13A44]/20 focus:border-[#E13A44] appearance-none bg-white"
                                         >
-                                            <option value="User">User</option>
                                             <option value="Admin">Admin</option>
                                             <option value="Technician">Technician</option>
                                         </select>

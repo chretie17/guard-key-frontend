@@ -3,6 +3,8 @@ import axios from 'axios';
 import Api from '../api';
 import { Building2, Calendar, Mail, Phone, User, Briefcase, ChevronDown } from 'lucide-react';
 import Logo from '../assets/logo.jpeg';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const validateEmail = (email, partner) => {
@@ -17,7 +19,10 @@ const validateEmail = (email, partner) => {
     const domain = email.split('@')[1].toLowerCase();
     return partnerDomains[partner]?.includes(domain) || false;
 };
-
+const handleNavigate = () => {
+    navigate('/login'); // Navigates to the login page
+  };
+  
 const validatePhone = (phone) => {
     const phoneRegex = /^(\+250|07)\d{8}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
@@ -73,6 +78,7 @@ const OutsiderRequestForm = () => {
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
+    const navigate = useNavigate();
 
     const handleChange = e => {
         const { name, value } = e.target;
@@ -309,11 +315,25 @@ const OutsiderRequestForm = () => {
                         <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                         {isLoading ? 'Submitting...' : 'Submit Request'}
                     </button>
+                    
+                    
                 </form>
 
                 <div className="mt-8 text-center text-sm text-gray-500">
                     All fields are required. Your information will be handled securely.
                 </div>
+                <button
+    onClick={() => (window.location.href = '/login')} // Redirect to login page
+    disabled={isLoading}
+    className="w-full mt-8 py-5 px-8 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 
+                text-white text-xl font-bold rounded-2xl shadow-lg shadow-red-500/30 
+                hover:shadow-xl hover:shadow-red-500/40 focus:ring-4 focus:ring-red-500/30
+                transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300
+                disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group"
+>
+    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+    Go to Login
+</button>
             </div>
         </div>
     );
